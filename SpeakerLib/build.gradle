@@ -40,55 +40,92 @@ task generateSource(type: Copy) {
     into "${project.buildDir}/generated/"
 }
 
-
 //Note the "<<" that means task is not getting compiled by gradle
 //unless it is explicitly called
-task alternateSources(dependsOn : generateSource) << {
-    String dynamicfileContents = new File("${project.buildDir}/generated/com/speaker/lib/Dynamic.java").getText('UTF-8')
-    String speakerfileContents = new File("${project.buildDir}/generated/com/speaker/lib/Speaker.java").getText('UTF-8')
+task alternateSources << {
 
-    //alternate dynamic file
-    dynamicfileContents = dynamicfileContents.replace("Dynamic","Dynamic1")
-    dynamicfileContents = dynamicfileContents.replace("Speaker","Speaker1")
+    //this postfix will be added to all classes
+    String postFix = "6"
+    File srcDir = new File("${project.buildDir}/generated/")
 
-    //alternate speaker file
-    speakerfileContents = speakerfileContents.replace("Dynamic","Dynamic1")
-    speakerfileContents = speakerfileContents.replace("Speaker","Speaker1")
+    //load all generated .java files
+    List<File> allGeneratedFiles = getAllFilesInDirectoryRecursively(srcDir)
 
-    //print
-    print(dynamicfileContents)
-    print(speakerfileContents)
+    //we cache all class names
+    List<String> originalClassNames = getAllGeneratedClassNames(allGeneratedFiles)
 
-    //create new location
-    def newdir = new File("${project.buildDir}/alternated/com/speaker/lib/")
-    if( !newdir.exists() ) {
-        newdir.mkdirs()
+    //now we go through each file , change all reference for other classes in it
+    //and storing it under other name
+    allGeneratedFiles.each {
+        File currentFile = it
+        String originalFileName = it.name
+        String fileContents = currentFile.getText('UTF-8')
+
+        //change reference to all other class inside the file
+        originalClassNames.each {
+            String originalClassName = it
+            //here is where the magic happens
+            fileContents = fileContents.replace(originalClassName, originalClassName + postFix)
+        }
+
+        String originalPath = currentFile.path
+        String newFileName = originalFileName.replace(".java", "") + postFix + ".java"
+        String alternateDirectoryPath = originalPath.replace("generated", "alternated").replace(originalFileName, "")
+        String alternatePath = originalPath.replace("generated", "alternated").replace(originalFileName, newFileName)
+
+        def newdir = new File(alternateDirectoryPath)
+        if (!newdir.exists()) {
+            newdir.mkdirs()
+        }
+
+        //overwrite the file
+        new File(alternatePath).write(fileContents, 'UTF-8')
     }
 
-    //write to the new location
-    new File( "${project.buildDir}/alternated/com/speaker/lib/Dynamic1.java" ).write( dynamicfileContents, 'UTF-8' )
-    new File( "${project.buildDir}/alternated/com/speaker/lib/Speaker1.java" ).write( speakerfileContents, 'UTF-8' )
 }
 
-//alternateSources.dependsOn generateSource
+//This is less preferable writing , but it doesn't give error highlighting in the IDE
+alternateSources.dependsOn clean, generateSource
 
-//compileJava.dependsOn generateSource
 
-//sourceSets {
-//    main {
-//        java {
-//            srcDir 'build/generated/'
-//        }
-//    }
-//}
+List<String> getAllGeneratedClassNames(List<File> allGeneratedFiles) {
+    List<String> fileNames = getAllFileNamesFromFileCollection(allGeneratedFiles)
+    return extractJavaClassNamesFromFileNames(fileNames)
+}
 
-//task generateSources {
-//    outputDir = file("$buildDir/generated")
-//    outputs.dir outputDir
-//    doFirst {
-//        outputDir.exists() || outputDir.mkdirs()
-//        new File(outputDir, "Generated.java").write("public class Generated {}")
-//    }
-//}
-//
-//compileJava.source generateSources.outputs.files, sourceSets.main.java
+/**
+ * Relieves file names with ".java" postfix and
+ * returns only file name
+ */
+List<String> extractJavaClassNamesFromFileNames(List<String> javaFileNames) {
+    List<String> classNames = []
+    //trim file names and get only classes
+    javaFileNames.each {
+        classNames.add(it.replace(".java", ""))
+    }
+    return classNames
+}
+
+/**
+ * Loads all files under given file tree
+ */
+import groovy.io.FileType
+
+
+List<File> getAllFilesInDirectoryRecursively(File srcTree) {
+    List<File> list = []
+    srcTree.eachFileRecurse(FileType.FILES) { file ->
+        list << file
+    }
+
+    return list
+}
+
+List<String> getAllFileNamesFromFileCollection(List<File> fileList) {
+    List<String> list = []
+    fileList.each {
+        list.add(it.name)
+    }
+    return list
+
+}

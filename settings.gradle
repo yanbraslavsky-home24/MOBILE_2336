@@ -1,0 +1,3 @@
+rootProject.name = 'MOBILE_2336'
+include 'SpeakerLib'
+

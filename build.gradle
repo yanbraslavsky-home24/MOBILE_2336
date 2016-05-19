@@ -1,0 +1,37 @@
+group 'com.yan.test'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+mainClassName = "com.yan.test.Main"
+
+repositories {
+    mavenCentral()
+}
+
+////we can specify multiple source sets
+//sourceSets {
+//
+//    //in order to compile the local project
+//    //we need to specify a dependency to the source folder that used
+//    //to generate a jar
+//    main {
+//        java {
+//            srcDir 'src/main'
+//        }
+//    }
+//}
+
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'repos'
+        }
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}

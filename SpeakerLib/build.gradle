@@ -1,0 +1,94 @@
+group 'com.yan.test'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+//sourceSets {
+//
+//    generated{
+//        java.srcDir "${buildDir}/generated/"
+//    }
+//
+//    main {
+//        compileClasspath += generated.output
+//        runtimeClasspath += generated.output
+//    }
+//
+//    test {
+//        compileClasspath += generated.output
+//        runtimeClasspath += generated.output
+//    }
+//}
+
+//compileJava{
+//    dependsOn hbm2dao
+//    source sourceSets.generated.output
+//}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task generateSource(type: Copy) {
+    from 'src/main/java'
+    into "${project.buildDir}/generated/"
+}
+
+
+//Note the "<<" that means task is not getting compiled by gradle
+//unless it is explicitly called
+task alternateSources(dependsOn : generateSource) << {
+    String dynamicfileContents = new File("${project.buildDir}/generated/com/speaker/lib/Dynamic.java").getText('UTF-8')
+    String speakerfileContents = new File("${project.buildDir}/generated/com/speaker/lib/Speaker.java").getText('UTF-8')
+
+    //alternate dynamic file
+    dynamicfileContents = dynamicfileContents.replace("Dynamic","Dynamic1")
+    dynamicfileContents = dynamicfileContents.replace("Speaker","Speaker1")
+
+    //alternate speaker file
+    speakerfileContents = speakerfileContents.replace("Dynamic","Dynamic1")
+    speakerfileContents = speakerfileContents.replace("Speaker","Speaker1")
+
+    //print
+    print(dynamicfileContents)
+    print(speakerfileContents)
+
+    //create new location
+    def newdir = new File("${project.buildDir}/alternated/com/speaker/lib/")
+    if( !newdir.exists() ) {
+        newdir.mkdirs()
+    }
+
+    //write to the new location
+    new File( "${project.buildDir}/alternated/com/speaker/lib/Dynamic1.java" ).write( dynamicfileContents, 'UTF-8' )
+    new File( "${project.buildDir}/alternated/com/speaker/lib/Speaker1.java" ).write( speakerfileContents, 'UTF-8' )
+}
+
+//alternateSources.dependsOn generateSource
+
+//compileJava.dependsOn generateSource
+
+//sourceSets {
+//    main {
+//        java {
+//            srcDir 'build/generated/'
+//        }
+//    }
+//}
+
+//task generateSources {
+//    outputDir = file("$buildDir/generated")
+//    outputs.dir outputDir
+//    doFirst {
+//        outputDir.exists() || outputDir.mkdirs()
+//        new File(outputDir, "Generated.java").write("public class Generated {}")
+//    }
+//}
+//
+//compileJava.source generateSources.outputs.files, sourceSets.main.java

@@ -10,34 +10,15 @@ repositories {
 }
 
 sourceSets {
-//
     alternated {
         java.srcDir "${buildDir}/alternated/"
         output.classesDir = "${buildDir}/alternated/compiled/"
     }
-//
-//    main {
-//        compileClasspath += generated.output
-//        runtimeClasspath += generated.output
-//    }
-//
-//    test {
-//        compileClasspath += generated.output
-//        runtimeClasspath += generated.output
-//    }
 }
-
-//compileJava{
-//    dependsOn hbm2dao
-//    source sourceSets.generated.output
-//}
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
-
-
-
 
 task generateSource(type: Copy) {
     from 'src/main/java'
@@ -109,9 +90,7 @@ task publishAlternateJar(type: Jar) {
         newdir.mkdirs()
     }
 
-
     baseName = 'AlternatedJar'
-//    from "${project.buildDir}/alternated/"//sourceSets.alternated.output
     from sourceSets.alternated.output.classesDir
     destinationDir newdir
 }
@@ -158,5 +137,4 @@ List<String> getAllFileNamesFromFileCollection(List<File> fileList) {
         list.add(it.name)
     }
     return list
-
 }

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="AlternatedJar-1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SpeakerLib/build/outputs/AlternatedJar-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

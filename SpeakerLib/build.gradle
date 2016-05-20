@@ -9,11 +9,12 @@ repositories {
     mavenCentral()
 }
 
-//sourceSets {
+sourceSets {
 //
-//    generated{
-//        java.srcDir "${buildDir}/generated/"
-//    }
+    alternated {
+        java.srcDir "${buildDir}/alternated/"
+        output.classesDir = "${buildDir}/alternated/compiled/"
+    }
 //
 //    main {
 //        compileClasspath += generated.output
@@ -24,7 +25,7 @@ repositories {
 //        compileClasspath += generated.output
 //        runtimeClasspath += generated.output
 //    }
-//}
+}
 
 //compileJava{
 //    dependsOn hbm2dao
@@ -34,6 +35,9 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
+
+
+
 
 task generateSource(type: Copy) {
     from 'src/main/java'
@@ -87,6 +91,33 @@ task alternateSources << {
 //This is less preferable writing , but it doesn't give error highlighting in the IDE
 alternateSources.dependsOn clean, generateSource
 
+task compileAlternateSources(type: JavaCompile) {
+    source = sourceSets.alternated.java.srcDirs
+    classpath = sourceSets.alternated.compileClasspath
+    destinationDir = sourceSets.alternated.output.classesDir
+}
+
+compileAlternateSources.dependsOn alternateSources
+
+/**
+ * TODO : Use this task to have a final compiled jar
+ */
+task publishAlternateJar(type: Jar) {
+
+    def newdir = new File("${project.buildDir}/outputs/")
+    if (!newdir.exists()) {
+        newdir.mkdirs()
+    }
+
+
+    baseName = 'AlternatedJar'
+//    from "${project.buildDir}/alternated/"//sourceSets.alternated.output
+    from sourceSets.alternated.output.classesDir
+    destinationDir newdir
+}
+
+//This is less preferable writing , but it doesn't give error highlighting in the IDE
+publishAlternateJar.dependsOn compileAlternateSources
 
 List<String> getAllGeneratedClassNames(List<File> allGeneratedFiles) {
     List<String> fileNames = getAllFileNamesFromFileCollection(allGeneratedFiles)

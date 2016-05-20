@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/MOBILE_2336_main.iml" filepath="$PROJECT_DIR$/.idea/modules/MOBILE_2336_main.iml" group="MOBILE_2336" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/MOBILE_2336_test.iml" filepath="$PROJECT_DIR$/.idea/modules/MOBILE_2336_test.iml" group="MOBILE_2336" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib.iml" filepath="$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib.iml" group="SpeakerLib" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_alternated.iml" filepath="$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_alternated.iml" group="SpeakerLib" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_main.iml" filepath="$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_main.iml" group="SpeakerLib" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_test.iml" filepath="$PROJECT_DIR$/.idea/modules/SpeakerLib/SpeakerLib_test.iml" group="SpeakerLib" />
     </modules>

@@ -22,6 +22,7 @@
       <module name="MOBILE_2336_main" target="1.8" />
       <module name="MOBILE_2336_publication" target="1.8" />
       <module name="MOBILE_2336_test" target="1.8" />
+      <module name="SpeakerLib_alternated" target="1.8" />
       <module name="SpeakerLib_generated" target="1.8" />
       <module name="SpeakerLib_main" target="1.8" />
       <module name="SpeakerLib_test" target="1.8" />

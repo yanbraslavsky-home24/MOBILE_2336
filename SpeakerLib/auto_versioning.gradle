@@ -1,0 +1,60 @@
+/**
+ * This task will auto increment the versioning in the file
+ * Use -Pkey=value to pass parameters to gradle task
+ *
+ * Try it with :
+ * ./gradlew  :SpeakerLib:autoincrementVersion -Pmajor=6 -Pminor=bump
+ *
+ * @param major = {
+ *     bump (increases the version)
+ *     ### (any given number overrides the current version code)
+ *}*
+ *
+ * @param minor{
+ *     bump (increases the version)
+ *     ### (any given number overrides the current version code)
+ *}
+ */
+task autoincrementVersion() {
+
+    //load version file
+    def File versionPropsFile = file('version.properties')
+    def Properties versionProps = loadPropertiesFile(versionPropsFile)
+
+    //read the version codes from file
+    def majorRead = versionProps['MAJOR_VERSION_CODE'].toInteger() + 1
+    def minorRead = versionProps['MINOR_VERSION_CODE'].toInteger() + 1
+    def buildRead = versionProps['BUILD_VERSION_CODE'].toInteger() + 1
+
+    //change the version depending on params
+    //IF THERE ARE PARAMS PASSED TO THE TASK...
+    if (project.hasProperty("major"))
+        majorRead = (major.equals("bump")) ? majorRead : major
+
+    if (project.hasProperty("minor"))
+        minorRead = (minor.equals("bump")) ? minorRead : minor
+
+    //store incremented version codes in file
+    versionProps['MAJOR_VERSION_CODE'] = majorRead.toString()
+    versionProps['MINOR_VERSION_CODE'] = minorRead.toString()
+    versionProps['BUILD_VERSION_CODE'] = buildRead.toString()
+    versionProps.store(versionPropsFile.newWriter(), null)
+
+    //OPTIONAL ...
+    //store the properties in project extension for later usage
+    ext {
+        def minorVersionCode = minorRead
+        def majorVersionCode = majorRead
+        def buildVersionCode = buildRead
+    }
+
+}
+
+Properties loadPropertiesFile(File versionPropsFile) {
+    if (!versionPropsFile.canRead())
+        throw new GradleException("Could not read version.properties!")
+
+    def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+    return versionProps
+}

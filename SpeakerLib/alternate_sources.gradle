@@ -1,0 +1,120 @@
+
+task generateSource(type: Copy) {
+    from 'src/main/java'
+    into "${project.buildDir}/generated/"
+}
+
+//Note the "<<" that means task is not getting compiled by gradle
+//unless it is explicitly called
+task alternateSources << {
+
+    //this postfix will be added to all classes
+    String postFix = project.ext.properties.minorVersionCode
+    File srcDir = new File("${project.buildDir}/generated/")
+
+    //load all generated .java files
+    List<File> allGeneratedFiles = getAllFilesInDirectoryRecursively(srcDir)
+
+    //we cache all class names
+    List<String> originalClassNames = getAllGeneratedClassNames(allGeneratedFiles)
+
+    //now we go through each file , change all reference for other classes in it
+    //and storing it under other name
+    allGeneratedFiles.each {
+        File currentFile = it
+        String originalFileName = currentFile.name
+        String fileContents = currentFile.getText('UTF-8')
+
+        //change reference to all other class inside the file
+        originalClassNames.each {
+            String originalClassName = it
+            //here is where the magic happens
+            fileContents = fileContents.replace(originalClassName, originalClassName + postFix)
+        }
+
+        String originalPath = currentFile.path
+        String newFileName = originalFileName.replace(".java", "") + postFix + ".java"
+        String alternateDirectoryPath = originalPath.replace("generated", "alternated").replace(originalFileName, "")
+        String alternatePath = originalPath.replace("generated", "alternated").replace(originalFileName, newFileName)
+
+        File newdir = new File(alternateDirectoryPath)
+        if (!newdir.exists()) {
+            newdir.mkdirs()
+        }
+
+        //overwrite the file
+        new File(alternatePath).write(fileContents, 'UTF-8')
+    }
+
+
+}
+
+//This is less preferable writing , but it doesn't give error highlighting in the IDE
+alternateSources.dependsOn clean, generateSource
+
+task compileAlternateSources(type: JavaCompile) {
+    source = sourceSets.alternated.java.srcDirs
+    classpath = sourceSets.alternated.compileClasspath
+    destinationDir = sourceSets.alternated.output.classesDir
+}
+
+compileAlternateSources.dependsOn alternateSources
+
+/**
+ * TODO : Use this task to have a final compiled jar
+ */
+task publishAlternateJar(type: Jar) {
+
+    def newdir = new File("${project.buildDir}/outputs/")
+    if (!newdir.exists()) {
+        newdir.mkdirs()
+    }
+
+    baseName = 'AlternatedJar'
+    from sourceSets.alternated.output.classesDir
+    destinationDir newdir
+}
+
+//This is less preferable writing , but it doesn't give error highlighting in the IDE
+publishAlternateJar.dependsOn compileAlternateSources
+
+List<String> getAllGeneratedClassNames(List<File> allGeneratedFiles) {
+    List<String> fileNames = getAllFileNamesFromFileCollection(allGeneratedFiles)
+    return extractJavaClassNamesFromFileNames(fileNames)
+}
+
+/**
+ * Relieves file names with ".java" postfix and
+ * returns only file name
+ */
+List<String> extractJavaClassNamesFromFileNames(List<String> javaFileNames) {
+    List<String> classNames = []
+    //trim file names and get only classes
+    javaFileNames.each {
+        classNames.add(it.replace(".java", ""))
+    }
+    return classNames
+}
+
+/**
+ * Loads all files under given file tree
+ */
+import groovy.io.FileType
+
+
+List<File> getAllFilesInDirectoryRecursively(File srcTree) {
+    List<File> list = []
+    srcTree.eachFileRecurse(FileType.FILES) { file ->
+        list << file
+    }
+
+    return list
+}
+
+List<String> getAllFileNamesFromFileCollection(List<File> fileList) {
+    List<String> list = []
+    fileList.each {
+        list.add(it.name)
+    }
+    return list
+}
